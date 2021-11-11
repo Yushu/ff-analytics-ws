@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  TeamRoleArn:
+    Type: String
+    Description: ARN of the TeamRole IAM TeamRole
+Resources:
+  WS-S3DataKMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A key for encrypting data written to S3
+      EnableKeyRotation: 'true'
+      PendingWindowInDays: 7
+      KeyPolicy:
+        Version: '2012-10-17'
+        Id: ws-s3-key
+        Statement:
+          - Sid: Enable IAM user permissions for key administration
+            Effect: Allow
+            Principal:
+              AWS: !Ref TeamRoleArn
+            Action: kms:*
+            Resource: '*'
+          - Sid: Allow use of key
+            Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action:
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:ReEncrypt*
+              - kms:generateDataKey
+              - kms:GenerateDataKeyWithoutPlaintext
+            Resource: '*'
+  WS-DatasetBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - BucketKeyEnabled: 'true'
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'aws:kms'
+              KMSMasterKeyID: !GetAtt WS-S3DataKMSKey.KeyId
+Outputs:
+  WS-DatasetBucket:
+    Description: Location of the uploaded datasets
+    Value: !Ref WS-DatasetBucket
