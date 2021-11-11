@@ -86,8 +86,8 @@ Resources:
             Effect: Allow
             Resource: !Join 
               - ''
-              - !GetAtt WSDatasetBucket.Arn
-              - /*
+              - - !GetAtt WSDatasetBucket.Arn
+                - /*
             Principal:
               AWS: !GetAtt WSRedshiftIAMRole.Arn
 Outputs:

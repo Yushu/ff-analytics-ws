@@ -11,7 +11,7 @@
     ![](kaggle-data-download.png)
     * Run the following command to create the S3 bucket required to upload the dataset and the KMS key required to encrypt it at rest.
     ```
-    aws cloudformation create-stack --stack-name step-1-stack --template-body file://step-1.yml --parameters ParameterKey=TeamRoleArn,ParameterValue=<ARN of the IAM role TeamRole from the lab environment>
+    aws cloudformation create-stack --stack-name step-1-stack --template-body file://step-1.yml --parameters ParameterKey=TeamRoleArn,ParameterValue=<ARN of the IAM role TeamRole from the lab environment> --capabilities CAPABILITY_IAM
     ```
     * Either upload the downloaded dataset file using the S3 console to the bucket we just created or run the following command,
     ```
