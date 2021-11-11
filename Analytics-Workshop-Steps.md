@@ -20,6 +20,8 @@
     Look at the __Outputs__ of the above created stack to get the bucket name. You can choose the prefix. 
 7. Launch an Amazon Redshift cluster. Use the step-2.yml cloudformation template. 
     ```
-    aws cloudformation create-stack --stack-name step-1-stack --template-body file://step-2.yml --parameters ParameterKey=TeamRoleArn,ParameterValue=<ARN of the IAM role TeamRole from the lab environment>
+    aws cloudformation create-stack --stack-name step-2-stack --template-body file://step-2.yml --parameters ParameterKey=TeamRoleArn,ParameterValue=<ARN of the IAM role TeamRole from the lab environment> --capabilities CAPABILITY_IAM
     ```
-8. 
+8. Once the stack creation from step 7 above completes. Go to the Amazon Redshift management console. From the left-handside panel click on __EDITOR__. Choose to use __Query Editor__ and __NOT__ the __Query Editor V2__.
+9. In the Query Editor, click the __Connect to database__ button on the right. In the pop up, choose __Create a new connection__, for Authentication choose __Temporary credentials__. Choose your cluster from the cluster drop-down, enter the database name __workshopredshiftdb__. For user enter __admin__. You should now be connected to the database.
+10. 

@@ -4,69 +4,69 @@ Parameters:
     Type: String
     Description: ARN of the TeamRole IAM Role
 Resources:
-  WS-VPC:
+  WSVPC:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 10.0.0.0/16
       EnableDnsSupport: 'true'
       EnableDnsHostnames: 'true'
-  WS-PrivateSubnet1:
+  WSPrivateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       CidrBlock: 10.0.1.0/24
       AvailabilityZone: 'us-east-1a'
-      VpcId: !Ref WS-VPC
-  WS-PrivateSubnet2:
+      VpcId: !Ref WSVPC
+  WSPrivateSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
       CidrBlock: 10.0.2.0/24
       AvailabilityZone: 'us-east-1b'
-      VpcId: !Ref WS-VPC
-  WS-PublicSubnet:
+      VpcId: !Ref WSVPC
+  WSPublicSubnet:
     Type: AWS::EC2::Subnet
     Properties:
       CidrBlock: 10.0.3.0/24
       AvailabilityZone: 'us-east-1c'
-      VpcId: !Ref WS-VPC
-  WS-PrepIGateway:
+      VpcId: !Ref WSVPC
+  WSPrepIGateway:
     Type: AWS::EC2::InternetGateway
-  WS-GatewayAttach:
+  WSGatewayAttach:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
-      InternetGatewayId: !Ref WS-PrepIGateway
-      VpcId: !Ref WS-VPC
-  WS-PrivateSubnetRouteTable:
+      InternetGatewayId: !Ref WSPrepIGateway
+      VpcId: !Ref WSVPC
+  WSPrivateSubnetRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !Ref WS-VPC
-  WS-PublicSubnetRouteTable:
+      VpcId: !Ref WSVPC
+  WSPublicSubnetRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !ref WS-VPC
-  WS-PrivateRouteTableAssoc1:
-    Type: Type: AWS::EC2::SubnetRouteTableAssociation
+      VpcId: !Ref WSVPC
+  WSPrivateRouteTableAssoc1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref WS-PrivateSubnetRouteTable
-      SubnetId: !Ref WS-PrivateSubnet1
-  WS-PrivateRouteTableAssoc2:
-    Type: Type: AWS::EC2::SubnetRouteTableAssociation
+      RouteTableId: !Ref WSPrivateSubnetRouteTable
+      SubnetId: !Ref WSPrivateSubnet1
+  WSPrivateRouteTableAssoc2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref WS-PrivateSubnetRouteTable
-      SubnetId: !Ref WS-PrivateSubnet2
-  WS-PublicRouteTableAssoc:
-    Type: Type: AWS::EC2::SubnetRouteTableAssociation
+      RouteTableId: !Ref WSPrivateSubnetRouteTable
+      SubnetId: !Ref WSPrivateSubnet2
+  WSPublicRouteTableAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref WS-PublicSubnetRouteTable
-      SubnetId: !Ref WS-PublicSubnet
-  WS-PublicRoute:
+      RouteTableId: !Ref WSPublicSubnetRouteTable
+      SubnetId: !Ref WSPublicSubnet
+  WSPublicRoute:
     Type: AWS::EC2::Route
     Properties:
-      RouteTableId: !Ref WS-PublicSubnetRouteTable
+      RouteTableId: !Ref WSPublicSubnetRouteTable
       DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref WS-PrepIGateway
+      GatewayId: !Ref WSPrepIGateway
 ## Prepped a bunch of stuff above
 ## including a cloud9 env.
-  WS-RedshiftPG:
+  WSRedshiftPG:
     Type: AWS::Redshift::ClusterParameterGroup
     Properties:
       Description: Parameter group for the workshop Redshift cluster
@@ -80,14 +80,14 @@ Resources:
           ParameterValue: 'true'
         - ParameterName: wlm_json_configuration
           ParameterValue: '[{"auto_wlm":true}]'
-  WS-RedshiftSubnetGroup:
+  WSRedshiftSubnetGroup:
     Type: AWS::Redshift::ClusterSubnetGroup
     Properties:
       Description: Subnet group for the Redshift cluster
       SubnetIds:
-        - !Ref WS-PrivateSubnet2
-        - !Ref WS-PrivateSubnet1
-  WS-RedshiftIAMRole:
+        - !Ref WSPrivateSubnet2
+        - !Ref WSPrivateSubnet1
+  WSRedshiftIAMRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -107,7 +107,7 @@ Resources:
               - Effect: Allow
                 Action: 's3:*'
                 Resource: '*'
-        - PolicyName: KMS Key access
+        - PolicyName: KMSKeyaccess
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -119,7 +119,7 @@ Resources:
                   - kms:generateDataKey
                   - kms:GenerateDataKeyWithoutPlaintext
                 Resource: '*'
-  WS-RedshiftKmsKey:
+  WSRedshiftKmsKey:
     Type: AWS::KMS::Key
     Properties:
       Description: A key for encrypting data in Redshift cluster
@@ -147,21 +147,21 @@ Resources:
               - kms:generateDataKey
               - kms:GenerateDataKeyWithoutPlaintext
             Resource: '*'
-  WS-RedshiftCluster:
+  WSRedshiftCluster:
     Type: AWS::Redshift::Cluster
     DeletionPolicy: Delete
     Properties:
       AllowVersionUpgrade: 'true'
       AquaConfigurationStatus: auto
       ClusterIdentifier: 'Workshop-Redshift-Cluster'
-      ClusterParameterGroupName: !Ref WS-RedshiftPG
-      ClusterSubnetGroupName: !Ref WS-RedshiftSubnetGroup
+      ClusterParameterGroupName: !Ref WSRedshiftPG
+      ClusterSubnetGroupName: !Ref WSRedshiftSubnetGroup
       DBName: 'workshopredshiftdb'
       Encrypted: 'true'
       ClusterType: multi-node
       IamRoles:
-        - !GetAtt WS-RedshiftIAMRole.Arn
-      KmsKeyId: !Ref WS-RedshiftKmsKey
+        - !GetAtt WSRedshiftIAMRole.Arn
+      KmsKeyId: !Ref WSRedshiftKmsKey
       ManualSnapshotRetentionPeriod: 1
       MasterUsername: 'admin'
       MasterUserPassword: 'Master123'

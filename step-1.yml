@@ -4,7 +4,7 @@ Parameters:
     Type: String
     Description: ARN of the TeamRole IAM TeamRole
 Resources:
-  WS-S3DataKMSKey:
+  WSS3DataKMSKey:
     Type: AWS::KMS::Key
     Properties:
       Description: A key for encrypting data written to S3
@@ -32,7 +32,7 @@ Resources:
               - kms:generateDataKey
               - kms:GenerateDataKeyWithoutPlaintext
             Resource: '*'
-  WS-DatasetBucket:
+  WSDatasetBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
     Properties:
@@ -41,8 +41,8 @@ Resources:
           - BucketKeyEnabled: 'true'
             ServerSideEncryptionByDefault:
               SSEAlgorithm: 'aws:kms'
-              KMSMasterKeyID: !GetAtt WS-S3DataKMSKey.KeyId
+              KMSMasterKeyID: !GetAtt WSS3DataKMSKey.KeyId
 Outputs:
-  WS-DatasetBucket:
+  DatasetBucket:
     Description: Location of the uploaded datasets
-    Value: !Ref WS-DatasetBucket
+    Value: !Ref WSDatasetBucket
