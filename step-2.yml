@@ -3,6 +3,9 @@ Parameters:
   TeamRoleArn:
     Type: String
     Description: ARN of the TeamRole IAM Role
+  WSRedshiftIAMRoleArn:
+    Type: String
+    Description: ARN of the Redshift Role ARN from step 1  
 Resources:
   WSVPC:
     Type: AWS::EC2::VPC
@@ -87,38 +90,38 @@ Resources:
       SubnetIds:
         - !Ref WSPrivateSubnet2
         - !Ref WSPrivateSubnet1
-  WSRedshiftIAMRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: redshift.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Path: /
-      Policies:
-        - PolicyName: S3Access
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action: 's3:*'
-                Resource: '*'
-        - PolicyName: KMSKeyaccess
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - kms:DescribeKey
-                  - kms:Decrypt
-                  - kms:ReEncrypt*
-                  - kms:generateDataKey
-                  - kms:GenerateDataKeyWithoutPlaintext
-                Resource: '*'
+#  WSRedshiftIAMRole:
+#    Type: AWS::IAM::Role
+#    Properties:
+#      AssumeRolePolicyDocument:
+#        Version: '2012-10-17'
+#        Statement:
+#          - Effect: Allow
+#            Principal:
+#              Service: redshift.amazonaws.com
+#            Action:
+#              - sts:AssumeRole
+#      Path: /
+#      Policies:
+#        - PolicyName: S3Access
+#          PolicyDocument:
+#            Version: '2012-10-17'
+#            Statement:
+#              - Effect: Allow
+#                Action: 's3:*'
+#                Resource: '*'
+#        - PolicyName: KMSKeyaccess
+#          PolicyDocument:
+#            Version: '2012-10-17'
+#            Statement:
+#              - Effect: Allow
+#                Action:
+#                  - kms:DescribeKey
+#                  - kms:Decrypt
+#                  - kms:ReEncrypt*
+#                  - kms:generateDataKey
+#                  - kms:GenerateDataKeyWithoutPlaintext
+#                Resource: '*'
   WSRedshiftKmsKey:
     Type: AWS::KMS::Key
     Properties:
@@ -160,7 +163,7 @@ Resources:
       Encrypted: 'true'
       ClusterType: multi-node
       IamRoles:
-        - !GetAtt WSRedshiftIAMRole.Arn
+        - !Ref WSRedshiftIAMRoleArn
       KmsKeyId: !Ref WSRedshiftKmsKey
       ManualSnapshotRetentionPeriod: 1
       MasterUsername: 'admin'

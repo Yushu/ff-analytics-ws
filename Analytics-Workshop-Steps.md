@@ -24,4 +24,21 @@
     ```
 8. Once the stack creation from step 7 above completes. Go to the Amazon Redshift management console. From the left-handside panel click on __EDITOR__. Choose to use __Query Editor__ and __NOT__ the __Query Editor V2__.
 9. In the Query Editor, click the __Connect to database__ button on the right. In the pop up, choose __Create a new connection__, for Authentication choose __Temporary credentials__. Choose your cluster from the cluster drop-down, enter the database name __workshopredshiftdb__. For user enter __admin__. You should now be connected to the database.
-10. 
+10. Create a table by issuing the following CREATE TABLE command in the Query Editor,
+```
+create table if not exists transactions(
+InvoiceNo integer not null,
+StockCode varchar(10) not null,
+Description varchar(40),
+Quantity smallint not null,
+InvoiceDate timestamp not null,
+UnitPrice real not null,
+CustomerID integer not null,
+Country varchar(20) not null,
+primary key(CustomerID))
+distkey(CustomerID)
+```
+11. Load the data from S3 into a Redshift table using the following COPY command,
+```
+
+```
