@@ -32,6 +32,18 @@ Resources:
               - kms:generateDataKey
               - kms:GenerateDataKeyWithoutPlaintext
             Resource: '*'
+          - Sid: Allow use by Redshift
+            Effect: Allow
+            Principal:
+              AWS: !GetAtt WSRedshiftIAMRole.Arn
+            Action:
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:ReEncrypt*
+              - kms:generateDataKey
+              - kms:GenerateDataKeyWithoutPlaintext
+            Resource: '*'
   WSDatasetBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
@@ -42,6 +54,8 @@ Resources:
             ServerSideEncryptionByDefault:
               SSEAlgorithm: 'aws:kms'
               KMSMasterKeyID: !GetAtt WSS3DataKMSKey.KeyId
+      PublicAccessBlockConfiguration:
+        RestrictPublicBuckets: 'true'
   WSRedshiftIAMRole:
     Type: AWS::IAM::Role
     Properties:
@@ -74,22 +88,22 @@ Resources:
                   - kms:generateDataKey
                   - kms:GenerateDataKeyWithoutPlaintext
                 Resource: '*'
-  WSBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref WSDatasetBucket
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Action:
-              - 's3:*'
-            Effect: Allow
-            Resource: !Join 
-              - ''
-              - - !GetAtt WSDatasetBucket.Arn
-                - /*
-            Principal:
-              AWS: !GetAtt WSRedshiftIAMRole.Arn
+#  WSBucketPolicy:
+#    Type: AWS::S3::BucketPolicy
+#    Properties:
+#      Bucket: !Ref WSDatasetBucket
+#      PolicyDocument:
+#        Version: '2012-10-17'
+#        Statement:
+#          - Action:
+#              - 's3:*'
+#            Effect: Allow
+#            Resource: !Join 
+#              - ''
+#              - - !GetAtt WSDatasetBucket.Arn
+#                - /*
+#            Principal:
+#              AWS: !GetAtt WSRedshiftIAMRole.Arn
 Outputs:
   DatasetBucket:
     Description: Location of the uploaded datasets

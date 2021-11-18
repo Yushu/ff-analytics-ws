@@ -1,0 +1,263 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  TeamRoleArn:
+    Type: String
+    Description: ARN of the TeamRole IAM TeamRole
+Resources:
+  WSS3DataKMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A key for encrypting data written to S3
+      EnableKeyRotation: 'true'
+      PendingWindowInDays: 7
+      KeyPolicy:
+        Version: '2012-10-17'
+        Id: ws-s3-key
+        Statement:
+          - Sid: Enable IAM user permissions for key administration
+            Effect: Allow
+            Principal:
+              AWS: !Ref TeamRoleArn
+            Action: kms:*
+            Resource: '*'
+          - Sid: Allow use of key
+            Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action:
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:ReEncrypt*
+              - kms:generateDataKey
+              - kms:GenerateDataKeyWithoutPlaintext
+            Resource: '*'
+          - Sid: Allow use by Redshift
+            Effect: Allow
+            Principal:
+              AWS: !GetAtt WSRedshiftIAMRole.Arn
+            Action:
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:ReEncrypt*
+              - kms:generateDataKey
+              - kms:GenerateDataKeyWithoutPlaintext
+            Resource: '*'
+  WSDatasetBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - BucketKeyEnabled: 'true'
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'aws:kms'
+              KMSMasterKeyID: !GetAtt WSS3DataKMSKey.KeyId
+      PublicAccessBlockConfiguration:
+        RestrictPublicBuckets: 'true'
+  WSRedshiftIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: redshift.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 's3:*'
+                Resource: '*'
+        - PolicyName: KMSKeyaccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:DescribeKey
+                  - kms:Decrypt
+                  - kms:ReEncrypt*
+                  - kms:generateDataKey
+                  - kms:GenerateDataKeyWithoutPlaintext
+                Resource: '*'
+## Step 1 starts here.
+  WSVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+  WSPrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: 'us-east-1a'
+      VpcId: !Ref WSVPC
+  WSPrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: 'us-east-1b'
+      VpcId: !Ref WSVPC
+  WSPublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.3.0/24
+      AvailabilityZone: 'us-east-1c'
+      VpcId: !Ref WSVPC
+  WSPrepIGateway:
+    Type: AWS::EC2::InternetGateway
+  WSGatewayAttach:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref WSPrepIGateway
+      VpcId: !Ref WSVPC
+  WSPrivateSubnetRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref WSVPC
+  WSPublicSubnetRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref WSVPC
+  WSPrivateRouteTableAssoc1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref WSPrivateSubnetRouteTable
+      SubnetId: !Ref WSPrivateSubnet1
+  WSPrivateRouteTableAssoc2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref WSPrivateSubnetRouteTable
+      SubnetId: !Ref WSPrivateSubnet2
+  WSPublicRouteTableAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref WSPublicSubnetRouteTable
+      SubnetId: !Ref WSPublicSubnet
+  WSPublicRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref WSPublicSubnetRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref WSPrepIGateway
+## Prepped a bunch of stuff above
+## including a cloud9 env.
+  WSRedshiftPG:
+    Type: AWS::Redshift::ClusterParameterGroup
+    Properties:
+      Description: Parameter group for the workshop Redshift cluster
+      ParameterGroupFamily: 'redshift-1.0'
+      Parameters:
+        - ParameterName: enable_user_activity_logging
+          ParameterValue: 'true'
+        - ParameterName: max_concurrency_scaling_clusters
+          ParameterValue: '1'
+        - ParameterName: require_ssl
+          ParameterValue: 'true'
+        - ParameterName: wlm_json_configuration
+          ParameterValue: '[{"auto_wlm":true}]'
+  WSRedshiftSubnetGroup:
+    Type: AWS::Redshift::ClusterSubnetGroup
+    Properties:
+      Description: Subnet group for the Redshift cluster
+      SubnetIds:
+        - !Ref WSPrivateSubnet2
+        - !Ref WSPrivateSubnet1
+  WSRedshiftIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: redshift.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+       - PolicyName: S3Access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 's3:*'
+                Resource: '*'
+       - PolicyName: KMSKeyaccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:DescribeKey
+                  - kms:Decrypt
+                  - kms:ReEncrypt*
+                  - kms:generateDataKey
+                  - kms:GenerateDataKeyWithoutPlaintext
+                Resource: '*'
+  WSRedshiftKmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A key for encrypting data in Redshift cluster
+      EnableKeyRotation: 'true'
+      PendingWindowInDays: 7
+      KeyPolicy:
+        Version: '2012-10-17'
+        Id: ws-RSenc-key
+        Statement:
+          - Sid: Enable IAM user permissions for administration
+            Effect: Allow
+            Principal:
+              AWS: !Ref TeamRoleArn
+            Action: 'kms:*'
+            Resource: '*'
+          - Sid: Allow use of key inside the cluster
+            Effect: Allow
+            Principal:
+              Service: redshift.amazonaws.com
+            Action:
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:ReEncrypt*
+              - kms:generateDataKey
+              - kms:GenerateDataKeyWithoutPlaintext
+            Resource: '*'
+  WSRedshiftCluster:
+    Type: AWS::Redshift::Cluster
+    DeletionPolicy: Delete
+    Properties:
+      AllowVersionUpgrade: 'true'
+      AquaConfigurationStatus: auto
+      ClusterIdentifier: 'Workshop-Redshift-Cluster'
+      ClusterParameterGroupName: !Ref WSRedshiftPG
+      ClusterSubnetGroupName: !Ref WSRedshiftSubnetGroup
+      DBName: 'workshopredshiftdb'
+      Encrypted: 'true'
+      ClusterType: multi-node
+      IamRoles:
+        - !GetAtt WSRedshiftIAMRole.Arn
+      KmsKeyId: !Ref WSRedshiftKmsKey
+      ManualSnapshotRetentionPeriod: 1
+      MasterUsername: 'admin'
+      MasterUserPassword: 'Master123'
+      NodeType: 'dc2.large'
+      NumberOfNodes: 2
+      PubliclyAccessible: 'false'
+      RotateEncryptionKey: 'true'
+Outputs:
+  DatasetBucket:
+    Description: Location of the uploaded datasets
+    Value: !Ref WSDatasetBucket
+  RedshiftIAMRoleArn:
+    Description: IAM role to use to access S3 objects from Redshift cluster
+    Value: !GetAtt WSRedshiftIAMRole.Arn
