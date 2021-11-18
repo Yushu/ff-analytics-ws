@@ -186,24 +186,24 @@ Resources:
       Path: /
       Policies:
         - PolicyName: S3Access
-            PolicyDocument:
-              Version: '2012-10-17'
-              Statement:
-                - Effect: Allow
-                  Action: 's3:*'
-                  Resource: '*'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 's3:*'
+                Resource: '*'
         - PolicyName: KMSKeyaccess
-            PolicyDocument:
-              Version: '2012-10-17'
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - kms:DescribeKey
-                    - kms:Decrypt
-                    - kms:ReEncrypt*
-                    - kms:generateDataKey
-                    - kms:GenerateDataKeyWithoutPlaintext
-                  Resource: '*'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:DescribeKey
+                  - kms:Decrypt
+                  - kms:ReEncrypt*
+                  - kms:generateDataKey
+                  - kms:GenerateDataKeyWithoutPlaintext
+                Resource: '*'
   WSRedshiftKmsKey:
     Type: AWS::KMS::Key
     Properties:
