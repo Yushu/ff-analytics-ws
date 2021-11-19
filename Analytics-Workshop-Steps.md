@@ -75,4 +75,14 @@ copy orders_1 from 's3://<Bucket-Name>/olist_orders_dataset.csv' IGNOREHEADER 1 
 ```
 copy payments_1 from 's3://<Bucket-Name>/olist_order_payments_dataset.csv' IGNOREHEADER 1 MAXERROR 10 iam_role '<IAM Role from the Outputs tab in Cloudformation console>' csv;
 ```
-12.
+12. We now create a table that pulls all the data that is relevant to us together, and prrovides a unified view of the transactions, run the following query to take a brief look at the results,
+```
+select orders_1.order_id, customers_1.customer_unique_id, orders_1.order_purchase_time, payments_1.payment_value from orders_1 inner join customers_1 on orders_1.customer_id=customers_1.customer_id inner join payments_1 on orders_1.order_id=payments_1.order_id order by orders_1.order_purchase_time asc;
+```
+
+To create a table with this data, we use the following query,
+
+```
+create table workshopredshiftdb.public.transactions_1 BACKUP YES DISTSTYLE EVEN as select orders_1.order_id, customers_1.customer_unique_id, orders_1.order_purchase_time, payments_1.payment_value from orders_1 inner join customers_1 on orders_1.customer_id=customers_1.customer_id inner join payments_1 on orders_1.order_id=payments_1.order_id order by orders_1.order_purchase_time asc;
+```
+13. 
