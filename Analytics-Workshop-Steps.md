@@ -85,4 +85,22 @@ To create a table with this data, we use the following query,
 ```
 create table workshopredshiftdb.public.transactions_1 BACKUP YES DISTSTYLE EVEN as select orders_1.order_id, customers_1.customer_unique_id, orders_1.order_purchase_time, payments_1.payment_value from orders_1 inner join customers_1 on orders_1.customer_id=customers_1.customer_id inner join payments_1 on orders_1.order_id=payments_1.order_id order by orders_1.order_purchase_time asc;
 ```
-13. 
+13. Since, we have now created this table, lets get these transactions together using the following queries,
+```
+select t.customer_unique_id, t.order_purchase_time, any_value(t.payment_value) as Value from transactions_1 as t group by 1,2 order by 2 desc;
+```
+Use the __CREATE TABLE__ example above to create a similar table if you like, we leave that as on exercise for you. Here on forward, we refer to the resulting table as __rfm_input_1__.
+
+14. Let us create the final RFM table, to create the RFM table, lets run the following query on the data we have so far,
+```
+create table workshopredshiftdb.public.rfm_input_2 BACKUP YES DISTSTYLE EVEN as select customer_unique_id, ((datediff(week,MAX(order_purchase_time),getdate())-161.0)/(271.0-161.0))*5.0 as "recency", ((COUNT(rfm_input_1.customer_unique_id)-1.0)/(17.0-1.0))*5.0 as "frequency", ((AVG(value)-0)/(13664.08-0))*5.0 as "monetary" from rfm_input_1 group by customer_unique_id;
+```
+We are calling this table rfm_input_2.
+
+15. On the AWS Management console of your lab environment, navigate to the Amazon SageMaker console. On the left-handside panel got (*click*) to *Notebook*->*Notebook instances*. In the upper right, click on the __Create notebook instance__ button.
+
+16. On the Create Notebook instance page, give the instance a name, choose the ml.c5.xlarge instance type from the drop-down. In __Additional configuration__ set the volume size to 50. Accept __TeamRole__ as the IAM role. Click the __Create notebook instance__ at the bottom right. Wait for the instance to be __InService__. Click on __Open Jupyter__.
+
+17. Download the Notebook from github, or if you have cloned this lab's github repo, uploaad it to the Notebook instance. *More details required*
+
+18. For the kernel choose __conda_mxnet_p36__ if not already chosen for you.
