@@ -97,6 +97,88 @@ create table workshopredshiftdb.public.rfm_input_2 BACKUP YES DISTSTYLE EVEN as 
 ```
 We are calling this table rfm_input_2.
 
+**Inference and Visualization using Quicksight **
+
+15. Setting up the dataset in QuickSight and pulling in the KMeans prediction 
+16. Go to Quickight,You need the QuickSight Enterprise Edition to complete the following steps. For more information, see How do I create an Amazon QuickSight Enterprise edition account?
+After you log in to QuickSight, select the same Region that you launched Amazon SageMaker.
+Choose Manage QuickSight->Choose Security & permissions->Choose Add or remove->Select Amazon S3->Choose Select S3 buckets.
+![image](https://user-images.githubusercontent.com/73990292/143077372-90ac34c1-5ea9-4c13-a5ca-a126ae1f2bd7.png)
+17.Select Amazon SageMaker.Choose Update.
+To return to the QuickSight console, choose the QuickSight
+18. On the QuickSight console, choose Manage Data.Choose New Dataset.Choose S3.
+![image](https://user-images.githubusercontent.com/73990292/143077622-34bf4dc4-db3b-428b-abe0-076066316a0b.png)
+Using a text editor, create a manifest file (e.g. manifest.json) on local with the following content (replace <bucket_name> and <prefix> with location coordinates for the CSV)
+Example : 
+    {
+    "fileLocations": [
+        {
+            "URIPrefixes": [
+                "s3://ff-workshop-wsdatasetbucket-cop9xekm3r64/train_data.CSV"  
+            ]
+        }
+    ],
+    "globalUploadSettings": {
+        "format": "CSV",
+        "delimiter": ",",
+        "containsHeader": "true"
+    }
+}
+                       
+19.Upload this file to create the Amazon S3 data source.Choose Edit/Preview data.
+    ![image](https://user-images.githubusercontent.com/73990292/143078055-7966bdaf-9ed0-43cb-9daf-b7201797b31c.png)
+20. To augment your data with the Amazon SageMaker model you built earlier, choose Augment with SageMaker.
+    ![image](https://user-images.githubusercontent.com/73990292/143078424-6dc23da0-6b2c-43fd-bfe7-87726a98db68.png)
+Click next -> Add description (if needed) to output fields
+Before you use an Amazon SageMaker model with QuickSight data, you have to create a JSON schema file that contains the metadata that QuickSight needs to process the model. It provides metadata about the fields, data types, column order, output, and settings that the model expects, such as type of the instance to use for generating the predictions.   
+    Example of Json file for the KMeans model :
+    {
+  "inputContentType": "CSV",
+  "outputContentType": "CSV",
+  "input": [
+    {
+      "name": "recency",
+      "type": "DECIMAL"
+    },
+    {
+      "name": "frequency",
+      "type": "DECIMAL"
+    },
+    {
+      "name": "monetary",
+      "type": "DECIMAL"
+    }
+],
+  "output": [
+    {
+      "name": "Predict_cluster",
+      "type": "STRING"
+    },
+    {
+      "name": "Predict_distance_to_cluster",
+      "type": "STRING"
+    }
+  ],
+  "description": "description",
+  "version": "v1",
+  "instanceCount": 1,
+  "instanceTypes": [
+    "ml.c4.xlarge"
+  ],
+  "defaultInstanceType": "ml.c4.xlarge"
+}
+
+    
+21.Choose **Prepare data** and SAve and Visualize.
+    This starts a job in SageMaker to run the inference and adds a new column to your dataset. It can take approximately 4 minutes for the Amazon SageMaker model to run a batch transform job to complete the inference and load the full scored dataset with the Prediction column into SPICE.
+    
+    Go to Analysis and choose the Analysis with dataset. Approx after 4 min SPICE load should be complete with prediction fields 
+    ![image](https://user-images.githubusercontent.com/73990292/143079123-d6388382-91c9-49ef-8f72-5689bde75b8d.png)
+22. Go ahead and build a Dashboard with prediction results
+    ![image](https://user-images.githubusercontent.com/73990292/143079266-1a12f83d-3b75-4de6-9f64-48adbc53722a.png)
+
+    
+
 15. On the AWS Management console of your lab environment, navigate to the Amazon SageMaker console. On the left-handside panel got (*click*) to *Notebook*->*Notebook instances*. In the upper right, click on the __Create notebook instance__ button.
 
 16. On the Create Notebook instance page, give the instance a name, choose the ml.c5.xlarge instance type from the drop-down. In __Additional configuration__ set the volume size to 50. Accept __TeamRole__ as the IAM role. Click the __Create notebook instance__ at the bottom right. Wait for the instance to be __InService__. Click on __Open Jupyter__.
