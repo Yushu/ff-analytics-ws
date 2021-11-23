@@ -104,10 +104,12 @@ We are calling this table rfm_input_2.
 After you log in to QuickSight, select the same Region that you launched Amazon SageMaker.
 Choose Manage QuickSight->Choose Security & permissions->Choose Add or remove->Select Amazon S3->Choose Select S3 buckets.
 ![image](https://user-images.githubusercontent.com/73990292/143077372-90ac34c1-5ea9-4c13-a5ca-a126ae1f2bd7.png)
+
 17.Select Amazon SageMaker.Choose Update.
 To return to the QuickSight console, choose the QuickSight
 18. On the QuickSight console, choose Manage Data.Choose New Dataset.Choose S3.
 ![image](https://user-images.githubusercontent.com/73990292/143077622-34bf4dc4-db3b-428b-abe0-076066316a0b.png)
+
 Using a text editor, create a manifest file (e.g. manifest.json) on local with the following content (replace <bucket_name> and <prefix> with location coordinates for the CSV)
 Example : 
     {
@@ -127,9 +129,11 @@ Example :
                        
 19.Upload this file to create the Amazon S3 data source.Choose Edit/Preview data.
     ![image](https://user-images.githubusercontent.com/73990292/143078055-7966bdaf-9ed0-43cb-9daf-b7201797b31c.png)
+
 20. To augment your data with the Amazon SageMaker model you built earlier, choose Augment with SageMaker.
     ![image](https://user-images.githubusercontent.com/73990292/143078424-6dc23da0-6b2c-43fd-bfe7-87726a98db68.png)
-Click next -> Add description (if needed) to output fields
+
+    Click next -> Add description (if needed) to output fields
 Before you use an Amazon SageMaker model with QuickSight data, you have to create a JSON schema file that contains the metadata that QuickSight needs to process the model. It provides metadata about the fields, data types, column order, output, and settings that the model expects, such as type of the instance to use for generating the predictions.   
     Example of Json file for the KMeans model :
     {
@@ -174,6 +178,7 @@ Before you use an Amazon SageMaker model with QuickSight data, you have to creat
     
     Go to Analysis and choose the Analysis with dataset. Approx after 4 min SPICE load should be complete with prediction fields 
     ![image](https://user-images.githubusercontent.com/73990292/143079123-d6388382-91c9-49ef-8f72-5689bde75b8d.png)
+    
 22. Go ahead and build a Dashboard with prediction results
     ![image](https://user-images.githubusercontent.com/73990292/143079266-1a12f83d-3b75-4de6-9f64-48adbc53722a.png)
 
