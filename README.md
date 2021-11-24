@@ -9,7 +9,7 @@
 6. On your browser, navigate to your lab environment's AWS Management Console, next, navigate to the the IAM console and on the left-handside panel click on __Roles__. In the right-hand side panel search for __TeamRole__. Once you find the TeamRole, click to see the details, make a note of the ARN of the role.
 7. Run the following commands,
 ```
-git clone https://OmarKhayyam/ff-analytics-ws.git
+git clone https://github.com/OmarKhayyam/ff-analytics-ws.git
 ``` 
 Next, initiate the stack creation for the lab,
 
