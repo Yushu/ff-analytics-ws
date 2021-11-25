@@ -1,3 +1,6 @@
+**Pre-requisites**
+Before you begin, you should have the AWS CLI installed [instructions for AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html).
+
 **Analytics Workshop - Fintech Forum, 2021**
 
 **NB**: <span style="color:blue">*If you are performing this lab in your own AWS account, provide the ARN of the admin user or a user that has adequate privileges to execute the steps that follow instead of what has been mentioned as __TeamRole__ in the instructions below.*</span>
