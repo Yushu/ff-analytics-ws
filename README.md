@@ -1,4 +1,5 @@
 **Pre-requisites**
+
 Before you begin, you should have the AWS CLI installed [instructions for AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html).
 
 **Analytics Workshop - Fintech Forum, 2021**
