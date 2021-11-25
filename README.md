@@ -93,7 +93,7 @@ create table workshopredshiftdb.public.transactions_1 BACKUP YES DISTSTYLE EVEN 
 ```
 13. Since, we have now created this table, lets get these transactions together using the following queries,
 ```
-select t.customer_unique_id, t.order_purchase_time, any_value(t.payment_value) as Value from transactions_1 as t group by 1,2 order by 2 desc;
+select t.customer_unique_id, t.order_purchase_time, any_value(t.payment_value) as value from transactions_1 as t group by 1,2 order by 2 desc;
 ```
 Use the __CREATE TABLE__ example above to create a similar table if you like, we leave that as on exercise for you. Here on forward, we refer to the resulting table as __rfm_input_1__.
 
@@ -113,15 +113,12 @@ We are calling this table rfm_input_2.
 
 **Visualization using Amazon Quicksight**
 
-19. Setting up the dataset in QuickSight and pulling in the KMeans prediction 
-20. Go to Quickight,You need the QuickSight Enterprise Edition to complete the following steps. For more information, see How do I create an Amazon QuickSight Enterprise edition account?
-After you log in to QuickSight, select the same Region that you launched Amazon SageMaker.
-Choose Manage QuickSight->Choose Security & permissions->Choose Add or remove->Select Amazon S3->Choose Select S3 buckets.
+19. On console search for Quickight and choose to go to Quicksight console. Quicksight account needs to be set up with account ID , mail address for the account and the admin for the account. In the account options, choose QuickSight Enterprise Edition to complete the following steps in this lab. For more information, see [How do I create an Amazon QuickSight Enterprise edition account?](https://aws.amazon.com/premiumsupport/knowledge-center/quicksight-enterprise-account/)
+Choose the same Region that you launched Amazon SageMaker.
+Choose Manage QuickSight -> Choose Security & permissions -> Choose Add or remove -> Select Amazon S3 -> Choose Select S3 buckets.
 ![image](https://user-images.githubusercontent.com/73990292/143077372-90ac34c1-5ea9-4c13-a5ca-a126ae1f2bd7.png)
 
-21. Select Amazon SageMaker.Choose Update.
-To return to the QuickSight console, choose the QuickSight
-22. On the QuickSight console, choose Manage Data.Choose New Dataset.Choose S3.
+20. Create a dataset in QuickSight with s3 as source : On the QuickSight console, choose Dataset and select 'New Dataset'.Choose S3.
 ![image](https://user-images.githubusercontent.com/73990292/143077622-34bf4dc4-db3b-428b-abe0-076066316a0b.png)
 
 Using a text editor, create a manifest file (e.g. manifest.json) on local with the following content (replace <bucket_name> and <prefix> with location coordinates for the CSV)
@@ -142,10 +139,10 @@ Example :
     }
 }
 ```                       
-23. Upload this file to create the Amazon S3 data source.Choose Edit/Preview data.
+21. Upload this file to create the Amazon S3 data source.Choose Edit/Preview data.
     ![image](https://user-images.githubusercontent.com/73990292/143078055-7966bdaf-9ed0-43cb-9daf-b7201797b31c.png)
 
-24. To augment your data with the Amazon SageMaker model you built earlier, choose Augment with SageMaker.
+22. To augment your data with the Amazon SageMaker model you built earlier, choose Augment with SageMaker.
     ![image](https://user-images.githubusercontent.com/73990292/143078424-6dc23da0-6b2c-43fd-bfe7-87726a98db68.png)
 
     Click next -> Add description (if needed) to output fields
@@ -189,24 +186,24 @@ Before you use an Amazon SageMaker model with QuickSight data, you have to creat
 }
 ```
     
-25. Choose **Prepare data** and SAve and Visualize.
-    This starts a job in SageMaker to run the inference and adds a new column to your dataset. It can take approximately 4 minutes for the Amazon SageMaker model to run a batch transform job to complete the inference and load the full scored dataset with the Prediction column into SPICE.
+23. Choose **Prepare data** and 'Save and Visualize'.
+    This starts a job in SageMaker to run the inference and adds a new column to your dataset. It can take approximately 4 minutes for the Amazon SageMaker model to run a batch transform job to complete the inference and load the full scored dataset with the Prediction column into [SPICE](https://docs.aws.amazon.com/quicksight/latest/user/spice.html).
     
     Go to Analysis and choose the Analysis with dataset. Approx after 4 min SPICE load should be complete with prediction fields 
     ![image](https://user-images.githubusercontent.com/73990292/143079123-d6388382-91c9-49ef-8f72-5689bde75b8d.png)
     
-26. Go ahead and build a Dashboard with prediction results
+24. Go ahead and build a Dashboard with prediction results
     ![image](https://user-images.githubusercontent.com/73990292/143079266-1a12f83d-3b75-4de6-9f64-48adbc53722a.png)
 
 **Clean Up**    
 
-27. Cleanup instructions for Amazon QuickSight.
+25. Cleanup instructions for Amazon QuickSight : Delete the S3 source dataset and the dashboard. To delete the account go to 'Account settings' from 'Manage Quicksight' and delete account.
 
-28. In the Jupyter notebook, close the notebook, and in the __Files__ tab, click the checkbox against the running notebook and click the __Shutdown__ button. Close the Jupyter notebook tab. In the Amazon SageMaker console, click the radio button against the name of the noteebook instance and from the __Actions__ drop down, click __Stop__. Once the instance has stopped, again from the __Actions__ drop-down, click __Delete__.
+26. In the Jupyter notebook, close the notebook, and in the __Files__ tab, click the checkbox against the running notebook and click the __Shutdown__ button. Close the Jupyter notebook tab. In the Amazon SageMaker console, click the radio button against the name of the notebook instance and from the __Actions__ drop down, click __Stop__. Once the instance has stopped, again from the __Actions__ drop-down, click __Delete__.
 
-29. Navigate to the IAM console, click on __Roles__ in the left-handside panel, search for the execution role you used for the SageMaker notebook. Click on the __Delete role__ button at the top right of the page.
+27. Navigate to the IAM console, click on __Roles__ in the left-handside panel, search for the execution role you used for the SageMaker notebook. Click on the __Delete role__ button at the top right of the page.
 
-30. Now navigate to the cloudformation console. List the stacks, click on the radio button against the stack that we created for this workshop. Click the __Delete__ button at the top of this page.
+28. Now navigate to the cloudformation console. List the stacks, click on the radio button against the stack that we created for this workshop. Click the __Delete__ button at the top of this page.
 
-31. Thank you.
+29. Thank you.
 
