@@ -41,7 +41,7 @@ Look at the __Outputs__ of the above created stack to get the bucket name. You c
 create table if not exists customers_1(
 customer_id varchar(40) not null,
 customer_unique_id varchar(40) not null,
-zip_code char(5),
+zip_code char(10),
 customer_city varchar(100),
 state varchar(3) not null,
 primary key(customer_id))
